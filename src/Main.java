@@ -123,7 +123,7 @@ public class Main {
 		List<ReplicaLoc> locations = c.masterStub.read(fileName);
 		System.err.println("[@CustomTest] Read1 started ");
 
-		// TODO fetch from all and verify 
+		// TODO fetch from all and verify
 		ReplicaLoc replicaLoc = locations.get(0);
 		ReplicaServerClientInterface replicaStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+replicaLoc.getId());
 		fileContent = replicaStub.read(fileName);

@@ -79,7 +79,7 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 		
 		locks.putIfAbsent(fileName, new ReentrantReadWriteLock());
 		ReentrantReadWriteLock lock = locks.get(fileName);
-		
+
 		@SuppressWarnings("resource")
 		BufferedInputStream br = new BufferedInputStream(new FileInputStream(f));
 		
