@@ -52,7 +52,7 @@ public class LaunchServer {
 		c.write(fileName, data);
 
 		c = new Client();
-		ss = "File 1 test test END".toCharArray(); // len = 20
+		ss = "Testing File 1 ---> END!!!".toCharArray(); // len = 20
 		data = new byte[ss.length];
 		for (int i = 0; i < ss.length; i++) 
 			data[i] = (byte) ss[i];
