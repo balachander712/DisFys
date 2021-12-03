@@ -1,9 +1,13 @@
 import java.io.IOException;
 import java.rmi.NotBoundException;
 
-public class Main {
+public class LaunchClient {
 
-    public static void launchClients(){
+
+    public LaunchClient() {
+    }
+
+    public void launchClients(){
         try {
             Client c = new Client();
             char[] ss = "File 1 test test END ".toCharArray();
@@ -41,12 +45,9 @@ public class Main {
     }
 
 
-    public static void main(String[] args) {
-
-        LaunchClient l1 = new LaunchClient();
-        LaunchClient l2 = new LaunchClient();
-        l1.launchClients();
-        //l2.launchClients();
-
-    }
+//    public static void main(String[] args) {
+//
+//        launchClients();
+//
+//    }
 }
