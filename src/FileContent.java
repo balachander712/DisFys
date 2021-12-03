@@ -2,8 +2,6 @@ import java.io.Serializable;
 
 
 public class FileContent implements Serializable{
-	
-
 
 	private static final long serialVersionUID = -6980642919938620877L;
 

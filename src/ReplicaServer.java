@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ReplicaServer implements ReplicaServerClientInterface,
-		ReplicaMasterInterface, ReplicaReplicaInterface, Remote {
+public class ReplicaServer implements ReplicaServerClient,
+		ReplicaMaster, ReplicaReplica, Remote {
 
 	
 	private int regPort = Configurations.REG_PORT;
@@ -33,20 +33,20 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 	
 	private Map<Long, String> activeTxn;
 	private Map<Long, Map<Long, byte[]>> txnFileMap;
-	private Map<String,	 List<ReplicaReplicaInterface> > filesReplicaMap;
+	private Map<String,	 List<ReplicaReplica> > filesReplicaMap;
 	private Map<Integer, ReplicaLoc> replicaServersLoc;
-	private Map<Integer, ReplicaReplicaInterface> replicaServersStubs;
+	private Map<Integer, ReplicaReplica> replicaServersStubs;
 	private ConcurrentMap<String, ReentrantReadWriteLock> locks;
 	
 	public ReplicaServer(int id, String dir) {
 		this.id = id;
-		this.dir = dir+"/Replica_"+id+"/";
-		txnFileMap = new TreeMap<Long, Map<Long, byte[]>>();
-		activeTxn = new TreeMap<Long, String>();
-		filesReplicaMap = new TreeMap<String, List<ReplicaReplicaInterface>>();
-		replicaServersLoc = new TreeMap<Integer, ReplicaLoc>();
-		replicaServersStubs = new TreeMap<Integer, ReplicaReplicaInterface>();
-		locks = new ConcurrentHashMap<String, ReentrantReadWriteLock>();
+		this.dir = dir+"/Replica-"+id+"/";
+		txnFileMap = new TreeMap<>();
+		activeTxn = new TreeMap<>();
+		filesReplicaMap = new TreeMap<>();
+		replicaServersLoc = new TreeMap<>();
+		replicaServersStubs = new TreeMap<>();
+		locks = new ConcurrentHashMap<>();
 		
 		File file = new File(this.dir);
 		if (!file.exists()){
@@ -73,8 +73,8 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 	}
 
 	@Override
-	public FileContent read(String fileName) throws FileNotFoundException,
-			RemoteException, IOException {
+	public FileContent read(String fileName) throws
+			IOException {
 		File f = new File(dir+fileName);
 		
 		locks.putIfAbsent(fileName, new ReentrantReadWriteLock());
@@ -95,8 +95,7 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 	}
 
 	@Override
-	public ChunkAck write(long txnID, long msgSeqNum, FileContent data)
-			throws RemoteException, IOException {
+	public ChunkAck write(long txnID, long msgSeqNum, FileContent data) {
 		System.out.println("[@ReplicaServer] write "+msgSeqNum);
 		// if this is not the first message of the write transaction
 		if (!txnFileMap.containsKey(txnID)){
@@ -111,7 +110,7 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 
 	@Override
 	public boolean commit(long txnID, long numOfMsgs)
-			throws MessageNotFoundException, RemoteException, IOException {
+			throws MessageNotFoundException, IOException {
 		
 		
 		System.out.println("[@Replica] commit intiated");
@@ -120,13 +119,10 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 			throw new MessageNotFoundException();
 		
 		String fileName = activeTxn.get(txnID);
-		List<ReplicaReplicaInterface> slaveReplicas = filesReplicaMap.get(fileName);
+		List<ReplicaReplica> slaveReplicas = filesReplicaMap.get(fileName);
 		
-		for (ReplicaReplicaInterface replica : slaveReplicas) {
+		for (ReplicaReplica replica : slaveReplicas) {
 			boolean sucess = replica.reflectUpdate(txnID, fileName, new ArrayList<>(chunkMap.values()));
-			if (!sucess) {
-				// TODO handle failure 
-			}
 		}
 		
 		
@@ -142,7 +138,7 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 		lock.writeLock().unlock();
 		
 		
-		for (ReplicaReplicaInterface replica : slaveReplicas) 
+		for (ReplicaReplica replica : slaveReplicas)
 			replica.releaseLock(fileName);
 		
 		
@@ -190,7 +186,7 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 		System.out.println("[@Replica] taking charge of file: "+fileName);
 		System.out.println(slaveReplicas);
 		
-		List<ReplicaReplicaInterface> slaveReplicasStubs = new ArrayList<ReplicaReplicaInterface>(slaveReplicas.size());
+		List<ReplicaReplica> slaveReplicasStubs = new ArrayList<ReplicaReplica>(slaveReplicas.size());
 		
 		for (ReplicaLoc loc : slaveReplicas) {
 			// if the current locations is this replica .. ignore
@@ -200,10 +196,10 @@ public class ReplicaServer implements ReplicaServerClientInterface,
 			// if this is a new replica generate stub for this replica
 			if (!replicaServersLoc.containsKey(loc.getId())){
 				replicaServersLoc.put(loc.getId(), loc);
-				ReplicaReplicaInterface stub = (ReplicaReplicaInterface) registry.lookup("ReplicaClient"+loc.getId());
+				ReplicaReplica stub = (ReplicaReplica) registry.lookup("ReplicaClient"+loc.getId());
 				replicaServersStubs.put(loc.getId(), stub);
 			}
-			ReplicaReplicaInterface replicaStub = replicaServersStubs.get(loc.getId());
+			ReplicaReplica replicaStub = replicaServersStubs.get(loc.getId());
 			slaveReplicasStubs.add(replicaStub);
 		}
 		

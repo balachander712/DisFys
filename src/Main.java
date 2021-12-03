@@ -105,7 +105,7 @@ public class Main {
 		}
 		
 		WriteAck ackMsg = c.masterStub.write(fileName);
-		ReplicaServerClientInterface stub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+ackMsg.getLoc().getId());
+		ReplicaServerClient stub = (ReplicaServerClient) registry.lookup("ReplicaClient"+ackMsg.getLoc().getId());
 
 		FileContent fileContent;
 		@SuppressWarnings("unused")
@@ -123,9 +123,8 @@ public class Main {
 		List<ReplicaLoc> locations = c.masterStub.read(fileName);
 		System.err.println("[@CustomTest] Read1 started ");
 
-		// TODO fetch from all and verify
 		ReplicaLoc replicaLoc = locations.get(0);
-		ReplicaServerClientInterface replicaStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+replicaLoc.getId());
+		ReplicaServerClient replicaStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+replicaLoc.getId());
 		fileContent = replicaStub.read(fileName);
 		System.err.println("[@CustomTest] data:");
 		System.err.println(new String(fileContent.getData()));
@@ -146,7 +145,7 @@ public class Main {
 		
 		//commit
 		ReplicaLoc primaryLoc = c.masterStub.locatePrimaryReplica(fileName);
-		ReplicaServerClientInterface primaryStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+primaryLoc.getId());
+		ReplicaServerClient primaryStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+primaryLoc.getId());
 		primaryStub.commit(ackMsg.getTransactionId(), seqN);
 
 		
@@ -155,14 +154,14 @@ public class Main {
 		System.err.println("[@CustomTest] Read3 started ");
 
 		replicaLoc = locations.get(0);
-		replicaStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+replicaLoc.getId());
+		replicaStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+replicaLoc.getId());
 		fileContent = replicaStub.read(fileName);
 		System.err.println("[@CustomTest] data:");
 		System.err.println(new String(fileContent.getData()));
 
 	}
 
-	static Master startMaster() throws AccessException, RemoteException{
+	static Master startMasterServer() throws AccessException, RemoteException{
 		Master master = new Master();
 		MasterServerClientInterface stub = 
 				(MasterServerClientInterface) UnicastRemoteObject.exportObject(master, 0);
@@ -178,7 +177,7 @@ public class Main {
 			LocateRegistry.createRegistry(regPort);
 			registry = LocateRegistry.getRegistry(regPort);
 
-			Master master = startMaster();
+			Master master = startMasterServer();
 			respawnReplicaServers(master);
 
 			launchClients();

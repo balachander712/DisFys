@@ -1491,7 +1491,7 @@
 											"top": 70,
 											"width": 172.68798828125,
 											"height": 13,
-											"text": "MasterServerClientInterface"
+											"text": "MasterServerClient"
 										},
 										{
 											"_type": "LabelView",
@@ -1857,7 +1857,7 @@
 											"top": 78,
 											"width": 142.33984375,
 											"height": 13,
-											"text": "ReplicaMasterInterface"
+											"text": "ReplicaMaster"
 										},
 										{
 											"_type": "LabelView",
@@ -2040,7 +2040,7 @@
 											"top": 54,
 											"width": 146.67529296875,
 											"height": 13,
-											"text": "ReplicaReplicaInterface"
+											"text": "ReplicaReplica"
 										},
 										{
 											"_type": "LabelView",
@@ -2223,7 +2223,7 @@
 											"top": 54,
 											"width": 177.0234375,
 											"height": 13,
-											"text": "ReplicaServerClientInterface"
+											"text": "ReplicaServerClient"
 										},
 										{
 											"_type": "LabelView",
@@ -6001,7 +6001,7 @@
 					"_parent": {
 						"$ref": "AAAAAAF84M411hoUHFU="
 					},
-					"name": "MasterServerClientInterface"
+					"name": "MasterServerClient"
 				},
 				{
 					"_type": "UMLInterface",
@@ -6017,7 +6017,7 @@
 					"_parent": {
 						"$ref": "AAAAAAF84M411hoUHFU="
 					},
-					"name": "ReplicaMasterInterface"
+					"name": "ReplicaMaster"
 				},
 				{
 					"_type": "UMLInterface",
@@ -6025,7 +6025,7 @@
 					"_parent": {
 						"$ref": "AAAAAAF84M411hoUHFU="
 					},
-					"name": "ReplicaReplicaInterface"
+					"name": "ReplicaReplica"
 				},
 				{
 					"_type": "UMLInterface",
@@ -6033,7 +6033,7 @@
 					"_parent": {
 						"$ref": "AAAAAAF84M411hoUHFU="
 					},
-					"name": "ReplicaServerClientInterface"
+					"name": "ReplicaServerClient"
 				},
 				{
 					"_type": "UMLClass",

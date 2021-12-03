@@ -18,7 +18,7 @@ public class Client {
 	public Client() {
 		try {
 			registry = LocateRegistry.getRegistry(regAddr, regPort);
-			masterStub =  (MasterServerClientInterface) registry.lookup("MasterServerClientInterface");
+			masterStub =  (MasterServerClient) registry.lookup("MasterServerClientInterface");
 			System.out.println("[@client] Master Stub fetched successfuly");
 		} catch (RemoteException | NotBoundException e) {
 			// fatal error .. no registry could be linked
@@ -32,7 +32,7 @@ public class Client {
 		
 		ReplicaLoc replicaLoc = locations.get(0);
 
-		ReplicaServerClientInterface replicaStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+replicaLoc.getId());
+		ReplicaServerClient replicaStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+replicaLoc.getId());
 		FileContent fileContent = replicaStub.read(fileName);
 		System.out.println("[@client] read operation completed successfuly");
 		System.out.println("[@client] data:");
@@ -40,26 +40,12 @@ public class Client {
 		System.out.println(new String(fileContent.getData()));
 		return fileContent.getData();
 	}
-	
-	public ReplicaServerClientInterface initWrite(String fileName, Long txnID) throws IOException, NotBoundException{
-		WriteAck ackMsg = masterStub.write(fileName);
-		txnID = new Long(ackMsg.getTransactionId());
-		return (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+ackMsg.getLoc().getId());
-	}
-	
-	public void writeChunk (long txnID, String fileName, byte[] chunk, long seqN, ReplicaServerClientInterface replicaStub) throws RemoteException, IOException{
-		
-		FileContent fileContent = new FileContent(fileName, chunk);
-		ChunkAck chunkAck;
-		
-		do { 
-			chunkAck = replicaStub.write(txnID, seqN, fileContent);
-		} while(chunkAck.getSeqNo() != seqN);
-	}
+
+
 	
 	public void write (String fileName, byte[] data) throws IOException, NotBoundException, MessageNotFoundException{
 		WriteAck ackMsg = masterStub.write(fileName);
-		ReplicaServerClientInterface replicaStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+ackMsg.getLoc().getId());
+		ReplicaServerClient replicaStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+ackMsg.getLoc().getId());
 		
 		System.out.println("[@client] Master granted write operation");
 		
@@ -95,30 +81,10 @@ public class Client {
 	
 	public void commit(String fileName, long txnID, long seqN) throws MessageNotFoundException, IOException, NotBoundException{
 		ReplicaLoc primaryLoc = masterStub.locatePrimaryReplica(fileName);
-		ReplicaServerClientInterface primaryStub = (ReplicaServerClientInterface) registry.lookup("ReplicaClient"+primaryLoc.getId());
+		ReplicaServerClient primaryStub = (ReplicaServerClient) registry.lookup("ReplicaClient"+primaryLoc.getId());
 		primaryStub.commit(txnID, seqN);
 		System.out.println("[@client] commit operation complete");
 	}
-	
-	public void batchOperations(String[] cmds){
-		System.out.println("[@client] batch operations started");
-		String cmd ;
-		String[] tokens;
-		for (int i = 0; i < cmds.length; i++) {
-			cmd = cmds[i];
-			tokens = cmd.split(", ");
-			try {
-				if (tokens[0].trim().equals("read"))
-					this.read(tokens[1].trim());
-				else if (tokens[0].trim().equals("write"))
-					this.write(tokens[1].trim(), tokens[2].trim().getBytes());
-				else if (tokens[0].trim().equals("commit"))
-						this.commit(tokens[1].trim(), Long.parseLong(tokens[2].trim()), Long.parseLong(tokens[3].trim()));
-			}catch (IOException | NotBoundException | MessageNotFoundException e){
-				System.err.println("Operation "+i+" Failed");
-			}
-		}
-		System.out.println("[@client] batch operations completed");
-	}
+
 	
 }

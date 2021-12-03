@@ -14,7 +14,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 
 
-public class Master implements MasterReplicaInterface, MasterServerClientInterface, Remote{
+public class Master implements MasterServerClient, Remote{
 
 	class HeartBeatTask extends TimerTask {
 
@@ -34,21 +34,21 @@ public class Master implements MasterReplicaInterface, MasterServerClientInterfa
 	
 	private int nextTID;
 	private int heartBeatRate = Configurations.HEART_BEAT_RATE;
-	private int replicationN = Configurations.REPLICATION_N; // number of file replicas
+	private int replicationN = Configurations.REPLICATION_FACTOR; // number of file replicas
 	private Timer HeartBeatTimer;
 	private Random randomGen;
 
 	private Map<String,	 List<ReplicaLoc> > filesLocationMap;
 	private Map<String,	 ReplicaLoc> primaryReplicaMap;
 	private List<ReplicaLoc> replicaServersLocs;
-	private List<ReplicaMasterInterface> replicaServersStubs; 
+	private List<ReplicaMaster> replicaServersStubs;
 
 
 	public Master() {
 		filesLocationMap = new HashMap<String, List<ReplicaLoc>>();
 		primaryReplicaMap = new HashMap<String, ReplicaLoc>();
 		replicaServersLocs = new ArrayList<ReplicaLoc>();
-		replicaServersStubs = new ArrayList<ReplicaMasterInterface>();
+		replicaServersStubs = new ArrayList<ReplicaMaster>();
 
 		nextTID = 0;
 		randomGen = new Random();
